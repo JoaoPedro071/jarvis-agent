@@ -1,4 +1,2 @@
-fastapi
-uvicorn
-ollama
+ollama>=0.5
 pytest

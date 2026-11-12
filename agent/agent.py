@@ -14,15 +14,34 @@ DIAS = ["segunda-feira", "terca-feira", "quarta-feira", "quinta-feira",
         "sexta-feira", "sabado", "domingo"]
 
 
+REGRAS_V1 = (
+    "Responda em portugues do Brasil, de forma curta. "
+    "Use as ferramentas para criar, listar, concluir e replanejar tarefas. "
+    "Converta datas relativas (amanha, sexta) para o formato YYYY-MM-DD. "
+    "Nunca invente tarefas ou ids: se precisar de um id, liste as tarefas antes. "
+    "Se uma ferramenta devolver erro, corrija os argumentos e tente de novo."
+)
+
+# v2: acrescenta regras para os erros vistos no log (chamar ferramenta em "oi" e inventar tarefas)
+REGRAS_V2 = REGRAS_V1 + (
+    " Se o usuario apenas cumprimentar, agradecer ou conversar, ou perguntar algo que nao seja "
+    "sobre tarefas, responda normalmente SEM usar ferramentas. "
+    "Nao preencha due_date se o usuario nao citou um dia. "
+    "Depois de usar uma ferramenta, responda usando somente o que ela devolveu: "
+    "nunca invente nem liste tarefas que nao vieram do resultado."
+)
+
+
+def versao_prompt() -> str:
+    return os.environ.get("JARVIS_PROMPT", "v2")
+
+
 def prompt_sistema() -> str:
     h = tools.hoje()
+    regras = REGRAS_V1 if versao_prompt() == "v1" else REGRAS_V2
     return (
         f"Voce e um assistente de agenda e tarefas. Hoje e {DIAS[h.weekday()]}, {h.isoformat()}. "
-        "Responda em portugues do Brasil, de forma curta. "
-        "Use as ferramentas para criar, listar, concluir e replanejar tarefas. "
-        "Converta datas relativas (amanha, sexta) para o formato YYYY-MM-DD. "
-        "Nunca invente tarefas ou ids: se precisar de um id, liste as tarefas antes. "
-        "Se uma ferramenta devolver erro, corrija os argumentos e tente de novo."
+        + regras
     )
 
 
@@ -56,7 +75,8 @@ class Agente:
 
     def pedir(self, texto: str) -> str:
         self.mensagens.append({"role": "user", "content": texto})
-        registrar({"sessao": self.sessao, "evento": "pedido", "texto": texto, "modelo": MODELO})
+        registrar({"sessao": self.sessao, "evento": "pedido", "texto": texto, "modelo": MODELO,
+                  "prompt": versao_prompt()})
 
         for passo in range(1, MAX_PASSOS + 1):
             inicio = time.perf_counter()

@@ -4,7 +4,8 @@ Roda so a primeira chamada ao modelo (sem executar ferramentas), entao e mais ra
 Uso (da raiz do projeto):
     python -m avaliacao.rodar --limite 3     # teste rapido
     python -m avaliacao.rodar                # todos os casos
-    JARVIS_PROMPT=v1 python -m avaliacao.rodar   # v1, v2 ou v3 (v3: datas extraidas por codigo)
+    JARVIS_PROMPT=v1 python -m avaliacao.rodar   # v1, v2 ou v3
+    JARVIS_PROMPT=v2 JARVIS_DATAS=codigo python -m avaliacao.rodar   # datas extraidas por codigo, prompt v2
     JARVIS_MODEL=outro-modelo python -m avaliacao.rodar
 """
 import argparse
@@ -76,7 +77,9 @@ def main() -> None:
     tools.hoje = lambda: HOJE_FIXO  # data fixa para o resultado ser reproduzivel
     casos = CASOS[: args.limite] if args.limite else CASOS
     prompt = ag.versao_prompt()
-    print(f"Modelo: {ag.MODELO} | prompt: {prompt} | temperatura: {ag.TEMPERATURA:g} | casos: {len(casos)}\n", flush=True)
+    datas = "codigo" if ag.datas_por_codigo() else "modelo"
+    rotulo = prompt + ("+datas" if datas == "codigo" and prompt != "v3" else "")
+    print(f"Modelo: {ag.MODELO} | prompt: {prompt} | datas: {datas} | temperatura: {ag.TEMPERATURA:g} | casos: {len(casos)}\n", flush=True)
 
     resultados, erros_seguidos = [], 0
     for caso in casos:
@@ -131,8 +134,8 @@ def main() -> None:
     pasta = Path("avaliacao/resultados")
     pasta.mkdir(parents=True, exist_ok=True)
     sufixo = "_parcial" if args.limite else ""
-    nome = f'{ag.MODELO.replace(":", "-")}_{prompt}_t{ag.TEMPERATURA:g}{sufixo}.json'
-    saida = {"modelo": ag.MODELO, "prompt": prompt, "temperatura": ag.TEMPERATURA, "data": datetime.now(timezone.utc).isoformat(),
+    nome = f'{ag.MODELO.replace(":", "-")}_{rotulo}_t{ag.TEMPERATURA:g}{sufixo}.json'
+    saida = {"modelo": ag.MODELO, "prompt": prompt, "datas": datas, "temperatura": ag.TEMPERATURA, "data": datetime.now(timezone.utc).isoformat(),
              "resumo": resumo, "casos": resultados}
     (pasta / nome).write_text(json.dumps(saida, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nResultado salvo em avaliacao/resultados/{nome}")

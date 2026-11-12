@@ -54,6 +54,15 @@ def versao_prompt() -> str:
     return versao
 
 
+def datas_por_codigo() -> bool:
+    """True quando a data de uma tarefa nova vem do codigo (agent/datas.py) e nao do modelo.
+    O v3 sempre usa; nas outras versoes, so com JARVIS_DATAS=codigo (isola essa mudanca do prompt)."""
+    modo = os.environ.get("JARVIS_DATAS", "modelo")
+    if modo not in ("modelo", "codigo"):
+        raise ValueError(f"JARVIS_DATAS invalido: {modo}. Use modelo ou codigo.")
+    return versao_prompt() == "v3" or modo == "codigo"
+
+
 def prompt_sistema() -> str:
     h = tools.hoje()
     return (
@@ -63,9 +72,9 @@ def prompt_sistema() -> str:
 
 
 def preparar_chamadas(chamadas: list[dict], texto_usuario: str) -> list[dict]:
-    """v3: a data de uma tarefa nova vem do pedido do usuario (por codigo), nunca do modelo.
-    v1 e v2 ficam exatamente como o modelo mandou."""
-    if versao_prompt() != "v3":
+    """Com datas por codigo, a data de uma tarefa nova vem do pedido do usuario, nunca do modelo.
+    Sem isso, as chamadas ficam exatamente como o modelo mandou."""
+    if not datas_por_codigo():
         return chamadas
     preparadas = []
     for c in chamadas:
@@ -115,7 +124,8 @@ class Agente:
     def pedir(self, texto: str) -> str:
         self.mensagens.append({"role": "user", "content": texto})
         registrar({"sessao": self.sessao, "evento": "pedido", "texto": texto,
-                   "modelo": MODELO, "prompt": versao_prompt()})
+                   "modelo": MODELO, "prompt": versao_prompt(),
+                   "datas": "codigo" if datas_por_codigo() else "modelo"})
 
         for passo in range(1, MAX_PASSOS + 1):
             inicio = time.perf_counter()

@@ -1,0 +1,764 @@
+{
+  "modelo": "llama3.2:3b",
+  "prompt": "v2",
+  "temperatura": 0.0,
+  "data": "2026-11-12T20:32:13.897476+00:00",
+  "resumo": {
+    "total": 22,
+    "acertos": 13,
+    "escolha_de_ferramenta": 19,
+    "argumentos_certos": "10/16",
+    "latencia_media_s": 7.2,
+    "por_categoria": {
+      "conversa": "1/4",
+      "criar": "2/8",
+      "listar": "5/5",
+      "concluir": "3/3",
+      "replanejar": "2/2"
+    }
+  },
+  "casos": [
+    {
+      "id": "c01",
+      "categoria": "conversa",
+      "frase": "oi",
+      "esperado": {
+        "tool": null,
+        "args": {}
+      },
+      "chamadas_do_modelo": [],
+      "chamadas": [],
+      "texto": "{}\n \n{ \"name\": \"list_tasks\", \"parameters\": {\"scope\": \"open\" } }",
+      "erro": null,
+      "latencia_ms": 44354,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c02",
+      "categoria": "conversa",
+      "frase": "bom dia, tudo bem?",
+      "esperado": {
+        "tool": null,
+        "args": {}
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 3772,
+      "tool_ok": false,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c03",
+      "categoria": "conversa",
+      "frase": "obrigado!",
+      "esperado": {
+        "tool": null,
+        "args": {}
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "Cria uma tarefa nova",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "Cria uma tarefa nova",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 6669,
+      "tool_ok": false,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c04",
+      "categoria": "conversa",
+      "frase": "qual a capital da França?",
+      "esperado": {
+        "tool": null,
+        "args": {}
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4142,
+      "tool_ok": false,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c05",
+      "categoria": "criar",
+      "frase": "me lembra de estudar banco de dados amanhã",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "banco de dados"
+          },
+          "due_date": "2026-11-12"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "estudar banco de dados",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "estudar banco de dados",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 7028,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c06",
+      "categoria": "criar",
+      "frase": "anota: entregar o ME1 sexta-feira",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "ME1"
+          },
+          "due_date": "2026-11-13"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "anotar o ME1",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "anotar o ME1",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 7115,
+      "tool_ok": true,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c07",
+      "categoria": "criar",
+      "frase": "preciso pagar a internet hoje",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "internet"
+          },
+          "due_date": "2026-11-11"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "due_date": "2026-11-12",
+            "title": "Pagar a internet hoje"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "due_date": "2026-11-12",
+            "title": "Pagar a internet hoje"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 6105,
+      "tool_ok": true,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c08",
+      "categoria": "criar",
+      "frase": "adiciona estudar inglês na segunda",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "ingles"
+          },
+          "due_date": "2026-11-16"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "estudar inglçãs na segunda",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "estudar inglçãs na segunda",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 8474,
+      "tool_ok": true,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c09",
+      "categoria": "criar",
+      "frase": "me lembra de ligar para o dentista depois de amanhã",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "dentista"
+          },
+          "due_date": "2026-11-13"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "Ligar para o dentista",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "Ligar para o dentista",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 7866,
+      "tool_ok": true,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c10",
+      "categoria": "criar",
+      "frase": "anota comprar café dia 20",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "cafe"
+          },
+          "due_date": "2026-11-20"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "comprar cafe",
+            "due_date": "2026-11-20"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "comprar cafe",
+            "due_date": "2026-11-20"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 6049,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c11",
+      "categoria": "criar",
+      "frase": "criar tarefa revisar o README",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "readme"
+          },
+          "due_date": null
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "revisar o README",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "revisar o README",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 6837,
+      "tool_ok": true,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c12",
+      "categoria": "criar",
+      "frase": "me lembra de estudar",
+      "esperado": {
+        "tool": "add_task",
+        "args": {
+          "title": {
+            "contem": "estudar"
+          },
+          "due_date": null
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "Estudar",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "add_task",
+          "arguments": {
+            "title": "Estudar",
+            "due_date": "2026-11-12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 6349,
+      "tool_ok": true,
+      "args_ok": false,
+      "passou": false
+    },
+    {
+      "id": "c13",
+      "categoria": "listar",
+      "frase": "o que tenho para hoje?",
+      "esperado": {
+        "tool": "list_tasks",
+        "args": {
+          "scope": "today"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "today"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "today"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4056,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c14",
+      "categoria": "listar",
+      "frase": "mostra minhas tarefas atrasadas",
+      "esperado": {
+        "tool": "list_tasks",
+        "args": {
+          "scope": "overdue"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4422,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c15",
+      "categoria": "listar",
+      "frase": "tenho algo atrasado?",
+      "esperado": {
+        "tool": "list_tasks",
+        "args": {
+          "scope": "overdue"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4382,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c16",
+      "categoria": "listar",
+      "frase": "quais são todas as minhas tarefas?",
+      "esperado": {
+        "tool": "list_tasks",
+        "args": {
+          "scope": "open"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4858,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c17",
+      "categoria": "listar",
+      "frase": "o que está pendente?",
+      "esperado": {
+        "tool": "list_tasks",
+        "args": {
+          "scope": "open"
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "list_tasks",
+          "arguments": {
+            "scope": "open"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 3799,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c18",
+      "categoria": "concluir",
+      "frase": "conclui a tarefa 3",
+      "esperado": {
+        "tool": "complete_task",
+        "args": {
+          "task_id": 3
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "complete_task",
+          "arguments": {
+            "task_id": "3"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "complete_task",
+          "arguments": {
+            "task_id": "3"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4453,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c19",
+      "categoria": "concluir",
+      "frase": "terminei a tarefa número 7",
+      "esperado": {
+        "tool": "complete_task",
+        "args": {
+          "task_id": 7
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "complete_task",
+          "arguments": {
+            "task_id": "7"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "complete_task",
+          "arguments": {
+            "task_id": "7"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4398,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c20",
+      "categoria": "concluir",
+      "frase": "marca como feita a tarefa 12",
+      "esperado": {
+        "tool": "complete_task",
+        "args": {
+          "task_id": 12
+        }
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "complete_task",
+          "arguments": {
+            "task_id": "12"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "complete_task",
+          "arguments": {
+            "task_id": "12"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4458,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c21",
+      "categoria": "replanejar",
+      "frase": "replaneja minhas tarefas atrasadas",
+      "esperado": {
+        "tool": "rollover_overdue",
+        "args": {}
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "rollover_overdue",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "rollover_overdue",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4943,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    },
+    {
+      "id": "c22",
+      "categoria": "replanejar",
+      "frase": "organiza o que ficou para trás",
+      "esperado": {
+        "tool": "rollover_overdue",
+        "args": {}
+      },
+      "chamadas_do_modelo": [
+        {
+          "name": "rollover_overdue",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "chamadas": [
+        {
+          "name": "rollover_overdue",
+          "arguments": {
+            "scope": "overdue"
+          }
+        }
+      ],
+      "texto": "",
+      "erro": null,
+      "latencia_ms": 4938,
+      "tool_ok": true,
+      "args_ok": true,
+      "passou": true
+    }
+  ]
+}

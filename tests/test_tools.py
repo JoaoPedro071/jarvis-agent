@@ -18,7 +18,7 @@ def test_add_e_list():
 
 
 def test_data_invalida_volta_como_erro():
-    assert "error" in tools.add_task("x", "amanha")
+    assert "error" in tools.add_task("x", "algum dia")
 
 
 def test_rollover_nao_perde_tarefa():

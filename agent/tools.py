@@ -1,3 +1,4 @@
+import copy
 from datetime import date
 
 from agent.db import conexao
@@ -159,3 +160,15 @@ def run_tool(name: str, args: dict) -> dict:
         return func(**args)
     except TypeError as e:
         return {"error": f"argumentos invalidos: {e}"}
+
+
+def schemas_para(versao: str) -> list[dict]:
+    """No v3 o modelo nao informa datas: o sistema extrai a data do pedido."""
+    schemas = copy.deepcopy(TOOL_SCHEMAS)
+    if versao == "v3":
+        for esquema in schemas:
+            f = esquema["function"]
+            if f["name"] == "add_task":
+                f["description"] = "Cria uma tarefa nova. Informe so o titulo; a data e extraida do pedido pelo sistema."
+                f["parameters"]["properties"].pop("due_date")
+    return schemas

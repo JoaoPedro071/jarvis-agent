@@ -4,7 +4,7 @@ Roda so a primeira chamada ao modelo (sem executar ferramentas), entao e mais ra
 Uso (da raiz do projeto):
     python -m avaliacao.rodar --limite 3     # teste rapido
     python -m avaliacao.rodar                # todos os casos
-    JARVIS_PROMPT=v1 python -m avaliacao.rodar   # compara versoes do prompt
+    JARVIS_PROMPT=v1 python -m avaliacao.rodar   # v1, v2 ou v3 (v3: datas extraidas por codigo)
     JARVIS_MODEL=outro-modelo python -m avaliacao.rodar
 """
 import argparse
@@ -76,7 +76,7 @@ def main() -> None:
     tools.hoje = lambda: HOJE_FIXO  # data fixa para o resultado ser reproduzivel
     casos = CASOS[: args.limite] if args.limite else CASOS
     prompt = ag.versao_prompt()
-    print(f"Modelo: {ag.MODELO} | prompt: {prompt} | casos: {len(casos)}\n", flush=True)
+    print(f"Modelo: {ag.MODELO} | prompt: {prompt} | temperatura: {ag.TEMPERATURA:g} | casos: {len(casos)}\n", flush=True)
 
     resultados, erros_seguidos = [], 0
     for caso in casos:
@@ -87,10 +87,12 @@ def main() -> None:
         inicio = time.perf_counter()
         try:
             resposta = ag.chamar_llm(mensagens)
-            chamadas, texto, erro = resposta["tool_calls"], resposta["content"], None
+            do_modelo = resposta["tool_calls"]
+            chamadas = ag.preparar_chamadas(do_modelo, caso["frase"])  # igual ao que o agente executaria
+            texto, erro = resposta["content"], None
             erros_seguidos = 0
         except Exception as e:
-            chamadas, texto, erro = [], "", str(e)
+            do_modelo, chamadas, texto, erro = [], [], "", str(e)
             erros_seguidos += 1
         ms = round((time.perf_counter() - inicio) * 1000)
 
@@ -100,7 +102,7 @@ def main() -> None:
             veredito = avaliar_caso(caso["esperado"], chamadas)
         resultados.append({
             "id": caso["id"], "categoria": caso["categoria"], "frase": caso["frase"],
-            "esperado": caso["esperado"], "chamadas": chamadas, "texto": texto,
+            "esperado": caso["esperado"], "chamadas_do_modelo": do_modelo, "chamadas": chamadas, "texto": texto,
             "erro": erro, "latencia_ms": ms, **veredito,
         })
         marca = "OK  " if veredito["passou"] else "ERRO"
@@ -129,8 +131,8 @@ def main() -> None:
     pasta = Path("avaliacao/resultados")
     pasta.mkdir(parents=True, exist_ok=True)
     sufixo = "_parcial" if args.limite else ""
-    nome = f'{ag.MODELO.replace(":", "-")}_{prompt}{sufixo}.json'
-    saida = {"modelo": ag.MODELO, "prompt": prompt, "data": datetime.now(timezone.utc).isoformat(),
+    nome = f'{ag.MODELO.replace(":", "-")}_{prompt}_t{ag.TEMPERATURA:g}{sufixo}.json'
+    saida = {"modelo": ag.MODELO, "prompt": prompt, "temperatura": ag.TEMPERATURA, "data": datetime.now(timezone.utc).isoformat(),
              "resumo": resumo, "casos": resultados}
     (pasta / nome).write_text(json.dumps(saida, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nResultado salvo em avaliacao/resultados/{nome}")

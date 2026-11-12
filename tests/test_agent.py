@@ -43,7 +43,7 @@ def test_pedido_vira_tarefa_e_gera_log(tmp_path):
 def test_erro_de_ferramenta_volta_para_o_modelo(tmp_path):
     llm = llm_roteirizado([
         {"content": "", "tool_calls": [
-            {"name": "add_task", "arguments": {"title": "X", "due_date": "amanha"}}]},
+            {"name": "add_task", "arguments": {"title": "X", "due_date": "algum dia"}}]},
         {"content": "", "tool_calls": [
             {"name": "add_task", "arguments": {"title": "X", "due_date": "2026-11-11"}}]},
         {"content": "Pronto.", "tool_calls": []},

@@ -10,7 +10,7 @@
 |---|---|
 | **Problema** | Pedidos de trabalho chegam em texto livre ("me lembra de entregar o relatório sexta"). Em agendas comuns, a tarefa vira um evento: passou o dia, ninguém cobra, e o que ficou pendente some. |
 | **Solução** | Um agente com LLM entende o pedido, escolhe a ação certa (criar, listar, concluir, replanejar) e grava num banco. Tarefa atrasada não some: é replanejada e contada. |
-| **Resultado** | Na avaliação interna (22 frases), o sistema acertou a decisão em 18 casos. Antes de mover o cálculo de datas do modelo para o código, eram 13. O número provavelmente é otimista: a validação com frases novas está em andamento. |
+| **Resultado** | Na avaliação interna (22 frases), um modelo de 3B acertou a decisão em 18 casos e um modelo de 8B em 22. Mover o cálculo de datas do modelo para o código levou o 3B de 13 para 18. O conjunto atual já está saturado e foi escrito junto com o sistema, então os números provavelmente são otimistas: a validação com frases novas está em andamento. |
 | **O que demonstra** | LLM com chamada de função, avaliação reprodutível, log de cada decisão, testes automatizados e decisões tomadas com base em medição. |
 | **Custo e privacidade** | Roda local (Ollama): nenhum dado sai da máquina e não há custo por chamada. Em troca, cada decisão leva de 4 a 10 s no hardware usado (CPU, 16 GB de RAM). |
 
@@ -24,7 +24,7 @@ O resultado é conhecido: pendências esquecidas e tempo gasto reorganizando man
 
 1. **Linguagem natural vira ação.** O usuário escreve como falaria ("me lembra de estudar banco de dados amanhã") e o agente decide qual ação executar.
 2. **Tarefa e tempo são coisas separadas.** A tarefa vive num banco com estado. A rotina de replanejamento garante que **tarefa atrasada não some**: ela vai para hoje e ganha +1 no contador de adiamentos. Com 3 adiamentos, é sinalizada para ser quebrada em partes menores ou cancelada. Esse comportamento é garantido por teste automatizado.
-3. **O modelo não decide tudo.** O que um modelo pequeno faz mal, como conta de calendário, passa para código determinístico. Isso elevou o acerto na criação de tarefas de 2 para 7 em 8 casos.
+3. **O modelo não decide tudo.** O que um modelo pequeno faz mal, como conta de calendário, passa para código determinístico. Com o modelo de 3B, isso elevou o acerto na criação de tarefas de 2 para 7 em 8 casos.
 4. **Tudo é medido e registrado.** Cada decisão do agente fica num log, e uma avaliação reprodutível mostra onde o sistema acerta e onde erra.
 
 ## Onde o mesmo padrão se aplica
@@ -40,7 +40,7 @@ Estes cenários são **aplicações possíveis** do padrão (pedido em texto liv
 | Competência | Evidência no repositório |
 |---|---|
 | LLM com ferramentas (function calling) | [`agent/tools.py`](agent/tools.py) e [`agent/agent.py`](agent/agent.py): o modelo escolhe a ferramenta e o código a executa |
-| Medir antes de opinar | [`avaliacao/`](avaliacao/): 22 casos com gabarito, temperatura 0, quatro configurações comparadas |
+| Medir antes de opinar | [`avaliacao/`](avaliacao/): 22 casos com gabarito, temperatura 0, cinco configurações comparadas em dois modelos |
 | Reportar resultado negativo | A versão v3 piorou a escolha de ferramenta (14/22) e ficou registrada, com a análise do porquê |
 | Decisão pragmática de engenharia | Datas extraídas por código ([`agent/datas.py`](agent/datas.py)) em vez de pedir ao modelo |
 | Observabilidade | Log por decisão, com o que o modelo mandou e o que o código corrigiu |
@@ -97,6 +97,7 @@ Decisões de projeto:
 sudo apt install -y python3 python3-venv git curl zstd
 curl -fsSL https://ollama.com/install.sh | sh
 ollama pull llama3.2:3b
+ollama pull llama3.1:8b   # opcional: mais preciso e um pouco mais lento
 
 git clone https://github.com/JoaoPedro071/jarvis-agent.git
 cd jarvis-agent
@@ -109,6 +110,12 @@ python -m agent.cli      # conversa com o agente
 ```
 
 Frases para testar: `me lembra de estudar banco de dados amanhã`, `o que tenho para hoje?`, `conclui a tarefa 1`, `replaneja minhas tarefas atrasadas`.
+
+Para usar a configuração que teve o melhor resultado na avaliação:
+
+```bash
+JARVIS_MODEL=llama3.1:8b JARVIS_DATAS=codigo python -m agent.cli
+```
 
 ### Configuração por variáveis de ambiente
 
@@ -125,28 +132,31 @@ Frases para testar: `me lembra de estudar banco de dados amanhã`, `o que tenho 
 
 `python -m avaliacao.rodar` apresenta 22 frases ao modelo e compara a decisão com um gabarito: a ferramenta certa foi escolhida? Os argumentos estão certos? Nos casos de conversa ("oi", "obrigado!"), o certo é **não chamar nenhuma ferramenta**. A avaliação não executa as ferramentas, usa temperatura 0 e fixa a data de hoje (11/11/2026), então os resultados são reproduzíveis.
 
-Resultados com `llama3.2:3b` (notebook com 16 GB de RAM, só CPU):
+Resultados (notebook com 16 GB de RAM, só CPU):
 
-| Configuração | Acertos | Ferramenta certa | Criar tarefa | Conversa | Listar / concluir / replanejar |
-|---|---|---|---|---|---|
-| v1 (prompt base) | 12/22 | 18/22 | 2/8 | 0/4 | 10/10 |
-| v2 (regras de conversa e de não inventar) | 13/22 | 19/22 | 2/8 | 1/4 | 10/10 |
-| v3 (três mudanças de uma vez) | 12/22 | 14/22 | 2/8 | 1/4 | 9/10 |
-| **v2 + datas por código** | **18/22** | 19/22 | **7/8** | 1/4 | 10/10 |
+| Modelo | Configuração | Acertos | Ferramenta certa | Criar tarefa | Conversa | Listar / concluir / replanejar |
+|---|---|---|---|---|---|---|
+| llama3.2:3b | v1 (prompt base) | 12/22 | 18/22 | 2/8 | 0/4 | 10/10 |
+| llama3.2:3b | v2 (regras de conversa e de não inventar) | 13/22 | 19/22 | 2/8 | 1/4 | 10/10 |
+| llama3.2:3b | v3 (três mudanças de uma vez) | 12/22 | 14/22 | 2/8 | 1/4 | 9/10 |
+| llama3.2:3b | v2 + datas por código | 18/22 | 19/22 | 7/8 | 1/4 | 10/10 |
+| **llama3.1:8b** | **v2 + datas por código** | **22/22** | **22/22** | **8/8** | **4/4** | **10/10** |
 
 O que os números mostram:
 
 - O modelo de 3B acerta as intenções bem marcadas (listar, concluir, replanejar) e erra em **saber quando não agir** e em **datas**.
 - Reescrever o prompt deixou de render: v1, v2 e v3 ficaram entre 12 e 13 acertos.
 - **O v3 piorou** a escolha de ferramenta. Ele mudou prompt, schema e extração de datas juntos, então não dá para atribuir a queda a uma causa só. Ficou registrado como experimento negativo.
-- Isolar uma mudança por vez deu resultado: **tirar a conta de datas do modelo e passar para o código** subiu "criar tarefa" de 2/8 para 7/8.
-- A decisão leva de 4 a 10 s na maioria dos casos. O primeiro caso de cada rodada leva cerca de 45 a 60 s, por causa do carregamento do modelo.
+- Isolar uma mudança por vez deu resultado: **tirar a conta de datas do modelo e passar para o código** subiu "criar tarefa" de 2/8 para 7/8 no 3B.
+- Com a mesma configuração, o modelo de **8B acertou os 22 casos**, inclusive os de conversa (4/4). A decisão ficou apenas cerca de 15% mais lenta na média (9,0 s contra 7,8 s, contando o carregamento do primeiro caso).
+- Ainda falta rodar o 8B **sem** as datas por código, para saber se essa mudança continua necessária com um modelo maior.
+- A decisão leva de 4 a 10 s na maioria dos casos. O primeiro caso de cada rodada leva cerca de 45 a 65 s, por causa do carregamento do modelo.
 
 Os arquivos completos ficam em `avaliacao/resultados/`.
 
 ## Limitações e cuidados ao ler os números
 
-- Os 22 casos foram escritos junto com o extrator de datas, olhando as mesmas frases. **O 18/22 é provavelmente otimista.** Está em andamento um conjunto de validação com frases novas, rodado uma única vez ao final.
+- Os 22 casos foram escritos junto com o extrator de datas, olhando as mesmas frases. **Os resultados são provavelmente otimistas, e o 22/22 do modelo de 8B mostra que este conjunto está saturado e já não separa configurações boas.** Está em andamento um conjunto de validação com frases novas, rodado uma única vez ao final.
 - A melhora nas datas vem do código, não do modelo. A métrica descreve o desempenho do **sistema**.
 - O modelo de 3B às vezes age quando deveria só conversar e corrompe acentos em títulos (ex.: "inglçãs").
 - O extrator de datas é por regras: "estudar a segunda lei de Newton" seria lido como "segunda-feira".
@@ -172,8 +182,9 @@ tests/         testes automáticos
 
 ## Próximos passos
 
-- Resolver a categoria "conversa", comparando um modelo maior (8B) e uma ferramenta explícita de resposta.
-- Roteamento entre modelos: local para o que ele acerta, modelo maior ou em nuvem para o que é difícil, decidido com base na avaliação.
+- Conjunto de validação com frases novas, rodado uma única vez, para medir sem o viés dos casos atuais.
+- Repetir a comparação do 8B sem as datas por código, para saber se essa mudança continua necessária.
+- Roteamento entre modelos: com o 8B custando pouco mais de tempo que o 3B neste hardware, rotear entre os dois traria um ganho pequeno. Um modelo em nuvem só se justifica se for bem mais rápido ou mais preciso, o que se decide com a mesma avaliação.
 - Integração real com o Google Agenda e com o Notion.
 - Agentes para LinkedIn e estudos.
 - Vídeo curto de demonstração.
